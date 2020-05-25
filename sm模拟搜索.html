@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        hostname = location.hostname;
+        path = location.href.replace('https://' + location.hostname, '')
+        if (hostname == 'm.sm.cn') {
+            if (path == '/') {
+                console.log('执行首页代码');
+                let ran = Math.random() * 100;
+                let search_btn = document.querySelector('#index_searchbox > div.row-wrap > div.btn.submit > span');
+                let testPassword = "英语培训"; //输入词
+                let cCode; //unicode码
+                let ele = document.getElementById("kw");
+                ele.addEventListener('keydown', function (e) {
+                    ele.value += String.fromCharCode(e.keyCode);
+                    ele.click();
+                    //console.log(e.keyCode, '按下');
+                })
+                if (ran >= 80) { //点击今日热搜 权重 20% 
+                    console.log('点击今日热搜');
+                    let hot_news = document.querySelectorAll('.hot-news-item');
+                    let i = Math.floor(Math.random() * hot_news.length);
+                    hot_news[i].querySelector('a').click();
+                } else if (ran >= 70) { //点击查看更多  权重 10%
+                    console.log('点击查看更多');
+                    let more_btn = document.querySelector('.more-btn');
+                    more_btn.click();
+                } else { //搜索框输入文字  权重 70%
+                    //输入文字 
+                    let timeout;
+                    ele.click();
+                    new Promise(function (resolve, reject) {
+                        for (var i = 0; i < testPassword.length; i++) {
+                            (function (x) {
+                                timeout = setTimeout(function () {
+                                    // console.log(x * 500);
+                                    cCode = testPassword.charCodeAt(x);
+                                    fireKeyEvent(ele, "keydown", cCode);
+                                    if (x == testPassword.length - 1) {
+                                        resolve();
+                                    }
+                                }, x * 1000)
+                            })(i)
+                        }
+                    }).then(() => {
+                        clearTimeout(timeout);
+                        let sug_ran = Math.random() * 100;
+                        let sug_arr = document.querySelectorAll('.sug');
+                        let add_sug = document.querySelectorAll('.c-plus');
+                        let i = Math.floor(Math.random() * sug_arr.length);
+                        if (sug_ran >= 70) { //点击联想词  权重30%
+                            console.log('点击联想词');
+                            sug_arr[i].querySelector('a').click();
+                        } else if (sug_ran >= 55) { //点击联想词+   
+                            console.log('点击联想词右方 +')
+                            add_sug[i].click();
+                            search_btn.click();
+                        } else { //点击搜索按钮  权重55%
+                            console.log('点击搜索按钮');
+                            search_btn.click();
+                        }
+                    })
+                }
+                //触发键盘事件函数
+                function fireKeyEvent(el, evtType, keyCode) {
+                    var evtObj;
+                    //chrome 浏览器下模拟事件
+                    evtObj = document.createEvent('UIEvents');
+                    evtObj.initUIEvent(evtType, true, true, window, 1);
+                    delete evtObj.keyCode;
+                    if (typeof evtObj.keyCode === "undefined") { //为了模拟keycode
+                        Object.defineProperty(evtObj, "keyCode", {
+                            value: keyCode
+                        });
+                    } else {
+                        evtObj.key = String.fromCharCode(keyCode);
+                    }
+                    el.dispatchEvent(evtObj);
+                }
+            } else {
+                console.log('执行结果页代码');
+                //广告权重
+                let ran = Math.random() * 100;
+                //广告与非广告权重
+                let ran2 = Math.random() * 100;
+                let ad_arr = document.querySelectorAll('.com-cpc-card');
+                let oldContent_arr = document.querySelectorAll('.sc');
+                let content_arr = [];
+                for (let i = 0; i < oldContent_arr.length; i++) {
+                    if (oldContent_arr[i].getAttribute('class') == "sc c-container") {
+                        content_arr.push(oldContent_arr[i]);
+                    }
+                }
+                let length = 0; //向下偏移量
+                let current_scrollTop = document.documentElement.scrollTop;
+                let select_ele; //要点击的元素
+                let flag;
+                if (ran2 >= 70) { //点击广告   权重30%
+                    flag = 1;
+                    if (ran >= 50) { //权重50%
+                        console.log(0, '广告');
+                        select_ele = ad_arr[0].querySelector('a');
+                    } else if (ran > 20) { //权重30%
+                        console.log(1, '广告');
+                        select_ele = ad_arr[1].querySelector('a');
+                    } else { //权重20%
+                        console.log(2, '广告');
+                        select_ele = ad_arr[2].querySelector('a');
+                    }
+                } else { //点击非广告  权重70%
+                    flag = 0;
+                    if (ran >= 50) { //权重50%
+                        console.log(0, '非广告');
+                        select_ele = content_arr[0].querySelector('a')
+                    } else if (ran > 20) { //权重30%
+                        console.log(2, '非广告');
+                        select_ele = content_arr[2].querySelector('a');
+                    } else if(ran>10) { //权重10%
+                        console.log(3, '非广告');
+                        select_ele = content_arr[3].querySelector('a');
+                    }else{//权重10%
+                        console.log(4, '非广告');
+                        select_ele = content_arr[4].querySelector('a');
+                    }
+                }
+                length = getAbsTop(select_ele) - current_scrollTop;
+                console.log(length);
+                //滑动事件
+                let count = 0;
+                let touchStartEvent = initTouchEvent('touchstart', 171, 247, 234, 355, 171, 498);
+                let touchMoveEvent = initTouchEvent('touchmove', 170, 87, 234, 235, 170, 445);
+                let touchEndEvent = initTouchEvent('touchend', 170, 87, 234, 235, 170, 445);
+                let time_down_flag = [1, 1, 1, 1, 1];
+                let time_up_flag = [1, 1, 1, 1, 1];
+                document.body.dispatchEvent(touchStartEvent);
+                //下滑 上滑 slide_down(count, x滑动速率, e事件, sIn定时器编号,resolve);
+                function slide_down(count, x, touchEvent, sIn,length,resolve) {
+                    if (count >= length) {
+                        clearInterval(sIn);
+                        resolve();
+                    } else {
+                        document.body.dispatchEvent(touchEvent);
+                        scrollBy(0, x);
+                    }
+                }
+                new Promise((resolve, reject) => {
+                    let sIn = setInterval(function () {
+                        if (length > 0) { //向下滑
+                            if (count <= 200+Math.floor(Math.random()*200)+1) {
+                                count += 2
+                                document.body.dispatchEvent(touchStartEvent);
+                                slide_down(count, 2, touchMoveEvent, sIn,length,resolve);
+                                document.body.dispatchEvent(touchEndEvent);
+
+                            } else if (count <= 600+Math.floor(Math.random()*200)+1) {
+                                if (time_down_flag[0]) {
+                                    sleep(500+Math.floor(Math.random()*2000)+1);
+                                    time_down_flag[0] = 0;
+                                }
+                                count += 5
+                                document.body.dispatchEvent(touchStartEvent);
+                              slide_down(count,5,touchMoveEvent,sIn,length,resolve)
+                              document.body.dispatchEvent(touchEndEvent);
+                            } else if (count <= 800+Math.floor(Math.random()*200)+1) {
+                                if (time_down_flag[1]) {
+                                    sleep(500+Math.floor(Math.random()*2000)+1);
+                                    time_down_flag[1] = 0;
+                                }
+                                count += 2
+                                document.body.dispatchEvent(touchStartEvent);
+                               slide_down(count,2,touchMoveEvent,sIn,length,resolve);
+                               document.body.dispatchEvent(touchEndEvent);
+                            } else {
+                                if (time_down_flag[2]) {
+                                    sleep(1500);
+                                    time_down_flag[2] = 0;
+                                }
+                                count += 5
+                                document.body.dispatchEvent(touchStartEvent);
+                                slide_down(count,5,touchMoveEvent,sIn,length,resolve);
+                                document.body.dispatchEvent(touchEndEvent);
+                            }
+                        } else { //向上滑
+                            if (count <= 200+Math.floor(Math.random()*200)+1) {
+                                count += 2
+                                document.body.dispatchEvent(touchStartEvent);
+                                slide_down(count, -2, touchMoveEvent, sIn,-length,resolve);
+                                document.body.dispatchEvent(touchEndEvent);
+                            } else if (count <= 600+Math.floor(Math.random()*200)+1) {
+                                if (time_up_flag[0]) {
+                                    sleep(500+Math.floor(Math.random()*2000)+1);
+                                    time_up_flag[0] = 0;
+                                }
+                                count += 5
+                                document.body.dispatchEvent(touchStartEvent);
+                              slide_down(count,-5,touchMoveEvent,sIn,-length,resolve)
+                              document.body.dispatchEvent(touchEndEvent);
+                            } else if (count <= 800+Math.floor(Math.random()*200)+1) {
+                                if (time_up_flag[1]) {
+                                    sleep(500+Math.floor(Math.random()*2000)+1);
+                                    time_up_flag[1] = 0;
+                                }
+                                count += 2
+                                document.body.dispatchEvent(touchStartEvent);
+                               slide_down(count,-2,touchMoveEvent,sIn,-length,resolve);
+                               document.body.dispatchEvent(touchEndEvent);
+                            } else {
+                                if (time_up_flag[2]) {
+                                    sleep(500+Math.floor(Math.random()*2000)+1);
+                                    time_up_flag[2] = 0;
+                                }
+                                count += 5
+                                document.body.dispatchEvent(touchStartEvent);
+                                slide_down(count,-5,touchMoveEvent,sIn,-length,resolve);
+                                document.body.dispatchEvent(touchEndEvent);
+                            }
+                        }
+                    }, 10);
+                }).then(() => {
+                    if (flag) {
+                        console.log(getAbsLeft(select_ele) + 1, getAbsTop(select_ele) - length + 2);
+                        click(getAbsLeft(select_ele) + 1, getAbsTop(select_ele) - length + 2, select_ele);
+                    } else {
+                        console.log(getAbsLeft(select_ele) + 1, getAbsTop(select_ele) - length + 2);
+                        click(getAbsLeft(select_ele) + 1, getAbsTop(select_ele) - length + 2, select_ele);
+                    }
+                    document.body.dispatchEvent(touchEndEvent);
+                })
+            }
+        } else {
+            console.log('执行落地页代码');
+            let touchStartEvent = initTouchEvent('touchstart', 171, 247, 234, 355, 171, 498);
+            let touchMoveEvent = initTouchEvent('touchmove', 170, 87, 234, 235, 170, 445);
+            let touchEndEvent = initTouchEvent('touchend', 170, 87, 234, 235, 170, 445);
+            let count = 0;
+            document.body.dispatchEvent(touchStartEvent);
+            new Promise(function (resolve, reject) {
+                let sIn = setInterval(function () {
+                    count += 2
+                    if (count >= 500) {
+                        clearInterval(sIn);
+                        resolve();
+                    } else {
+                        document.body.dispatchEvent(touchMoveEvent);
+                        scrollBy(0, 2);
+                    }
+                }, 10);
+            }).then(() => {
+                document.body.dispatchEvent(touchEndEvent);
+                console.log('返回上一页');
+                history.go(-1);
+            })
+        }
+        //创建touch==并初始化touchevent函数
+        function initTouchEvent(type, cx, cy, sx, sy, px, py) {
+            let touch = new Touch({
+                identifier: 0,
+                target: document.body,
+                clientX: cx,
+                clientY: cy,
+                screenX: sx,
+                screenY: sy,
+                pageX: px,
+                pageY: py,
+                radiusX: 15,
+                radiusY: 15
+            });
+            let touchEvent = new TouchEvent(type, {
+                cancelable: true,
+                bubbles: true,
+                composed: true,
+                touches: [touch],
+                targetTouches: [touch],
+                changedTouches: [touch]
+            });
+            return touchEvent;
+        }
+        //获取顶部距离方法
+        function getAbsTop(obj) {
+            var top = obj.offsetTop;
+            while (obj.offsetParent != null) {
+                obj = obj.offsetParent;
+                top += obj.offsetTop;
+            }
+            return top;
+        }
+        //获取左部距离方法
+        function getAbsLeft(obj) {
+            var l = obj.offsetLeft;
+            while (obj.offsetParent != null) {
+                obj = obj.offsetParent;
+                l += obj.offsetLeft;
+            }
+            return l;
+        }
+        //根据坐标 触发点击事件方法
+        function click(x, y, el) {
+            var ev = document.createEvent("MouseEvent");
+            //根据 距离可视区域左上角 横坐标，纵坐标 获取元素
+            //var el = document.elementFromPoint(x, y);
+            var el = el;
+            ev.initMouseEvent(
+                "click",
+                true /* bubble */ , true /* cancelable */ ,
+                window, null,
+                x, y, x, y, /* coordinates */
+                false, false, false, false, /* modifier keys */
+                0 /*left*/ , null
+            );
+            el.dispatchEvent(ev);
+        };
+        //向下滑
+        function touch_move_rate(count, length, x, sIn) {
+            if (length > 0) { //向下滑
+                count += x
+                if (count >= length) {
+                    clearInterval(sIn);
+                    resolve();
+                } else {
+                    document.body.dispatchEvent(touchMoveEvent);
+                    scrollBy(0, x);
+                }
+            } else { //向上滑
+                count -= x
+                if (count <= length) {
+                    clearInterval(sIn);
+                    resolve();
+                } else {
+                    document.body.dispatchEvent(touchMoveEvent);
+                    scrollBy(0, -x);
+                }
+            }
+        }
+        //暂停  单位毫秒
+        function sleep(numberMillis) {
+            var now = new Date();
+            var exitTime = now.getTime() + numberMillis;
+            while (true) {
+                now = new Date();
+                if (now.getTime() > exitTime)
+                    return;
+            }
+        }
+    </script>
+</body>
+
+</html>
